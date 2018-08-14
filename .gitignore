@@ -1,0 +1,3 @@
+# .gitignore
+fc1.egg-info/
+fcs1/__pycache__
