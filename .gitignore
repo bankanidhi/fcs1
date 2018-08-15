@@ -1,3 +1,4 @@
 # .gitignore
 fcs1.egg-info
+correlations
 fcs1/__pycache__

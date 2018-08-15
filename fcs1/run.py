@@ -1,4 +1,4 @@
-from .correlate import analyse_data_single, find_files
+from .correlate import analyse_data_single, find_files, analyse_data_multi
 from .args import get_args
 
 
@@ -12,6 +12,8 @@ def run():
             analyse_data_single(file)
     elif options.m:
         file_list = find_files(options.m)
+        for file in file_list:
+            analyse_data_multi(file)
 
     # If the user wants to perform a dry run.
     if options.list:
@@ -31,4 +33,4 @@ def run():
     # elif options.m:
     #     for file in file_list:
     #         analyse_data_multi(file)
-            # generate_report()
+        # generate_report()
