@@ -9,15 +9,33 @@ from lmfit import Model
 matplotlib.style.use("seaborn-colorblind")
 
 
+def columns(filename):
+    b = np.genfromtxt(filename, delimiter="\t", skip_header=50, max_rows=186)
+    return b.shape[1]
+
+
 def return_corr_function_data(filename):
     """This function opens ascii files and reads the correlation function raw
     data
     """
+    ncols = columns(filename)
+    print(ncols)
+    if ncols == 2:
+        ncols = 1
+        maxr = 900
+    elif ncols ==3:
+        ncols = 1
+        maxr = 400
+    else:
+        ncols = 3
+        maxr = 186
+    print(ncols)
+
     b = np.genfromtxt(filename, delimiter="\t", usecols=(0), skip_header=50,
-                      max_rows=186).T
+                      max_rows=maxr).T
 
     b = np.column_stack((b, np.genfromtxt(filename, delimiter="\t",
-                                          usecols=(3), skip_header=50, max_rows=186) - 1))
+                                          usecols=(ncols), skip_header=50, max_rows=maxr) - 1))
     # Returning transposed matrix for easy iteration
     return b.T
 
@@ -50,7 +68,7 @@ def correlation(t, g0, tauD, sp, bl):
 #     print(result.fit_report())
 
 
-def analyse_data_single(filename, lowlimit=1e-5, highlimit=1):
+def analyse_data_single(filename, lowlimit=1e-6, highlimit=1):
     corr_data = return_corr_function_data(filename=filename)
 
     t = corr_data[0]
@@ -67,7 +85,7 @@ def analyse_data_single(filename, lowlimit=1e-5, highlimit=1):
     return fit_param
 
 
-def analyse_data_multi(filename, lowlimit=1e-5, highlimit=1):
+def analyse_data_multi(filename, lowlimit=1e-6, highlimit=1):
     files_list = find_files()
     b = np.genfromtxt(
         files_list[0], delimiter="\t", usecols=(0), skip_header=50, max_rows=186).T
@@ -82,7 +100,7 @@ def analyse_data_multi(filename, lowlimit=1e-5, highlimit=1):
 
     t = b.T[0]
 
-    mask = (t > lowlimit)  # * (t < highlimit)
+    mask = (t > lowlimit) * (t < highlimit)
 
     # Limit the time axis in the raw data
     useful_t = b.T[0][mask]
@@ -98,7 +116,7 @@ def analyse_data_multi(filename, lowlimit=1e-5, highlimit=1):
 def plot_fits(corr_data, fit_param, mask):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(corr_data[0], corr_data[1], 'o', mfc='none', label="Raw data")
+    ax.plot(corr_data[0][mask], corr_data[1][mask], 'o', mfc='none', label="Raw data")
     ax.plot(corr_data[0][mask], fit_param.best_fit, '-r',
             label="Fitted data")
     ax.plot(corr_data[0][mask], fit_param.residual, '-g', label="Residuals")
